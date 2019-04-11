@@ -227,6 +227,7 @@ def flatten(source):
             inputname = inputname + '.tex'
         with io.open(inputname, encoding='utf-8') as f:
             newtext = f.read()
+        newtext = strip_comments(newtext)
         newtext = re.sub(r'(\\input{)(.*?)(})', repl, newtext)
         return newtext
 
@@ -236,6 +237,7 @@ def flatten(source):
             inputname = inputname + '.tex'
         with io.open(inputname, encoding='utf-8') as f:
             newtext = f.read()
+        newtext = strip_comments(newtext)
         newtext = '\\clearpage\n' + newtext
         newtext = re.sub(r'(\\input{)(.*?)(})', repl, newtext)
         newtext += '\\clearpage\n'
@@ -256,8 +258,6 @@ def main(fname):
     source = strip_comments(source)
     print('[parxiv] flattening source')
     source = flatten(source)
-    print('[parxiv] stripping comments again')
-    source = strip_comments(source)
     print('[parxiv] finding figures...')
     figlist, source, graphicspaths = find_figs(source)
     # print('[parxiv] finding article class and bib style')
