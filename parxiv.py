@@ -9,6 +9,7 @@ import time
 import shutil
 import tempfile
 import subprocess
+import sys
 
 # Python2 FileNotFoundError support
 try:
@@ -209,6 +210,35 @@ def find_figs(source):
 
     return figlist, source, graphicspaths
 
+def find_csv(source):
+    """
+
+    find csv in \csvreader[something]{PATH/filename.csv}
+                \csvreader{PATH/filename.csv}
+                \addplot[something]{PATH/filename.csv}
+                \addplot{PATH/filename.csv}
+
+    and copy csv with dir hierarchy to arxivdir
+    """
+
+    # keep a list of (csvpath)
+    csvlist = []
+
+    def repl(m):
+        csvpath = m.group(2)
+
+        if os.path.isabs(os.path.dirname(csvpath)):
+          print('find_csv: Absolute paths are not supported')
+          sys.exit(-1)
+
+        csvlist.append(csvpath)
+        return m.group(0)
+
+    source = re.sub(r'(\\csvreader\[.*?\]\s*?{)(.*?\.csv)(})', repl, source)
+    source = re.sub(r'(\\addplot\[.*?\]\s*?{)(.*?\.csv)(})', repl, source)
+
+    return csvlist, source
+
 
 def flatten(source):
     """
@@ -260,6 +290,7 @@ def main(fname):
     source = flatten(source)
     print('[parxiv] finding figures...')
     figlist, source, graphicspaths = find_figs(source)
+    csvlist, source = find_csv(source)
     # print('[parxiv] finding article class and bib style')
     # localbibstyle = find_bibstyle(source)
 
@@ -300,6 +331,10 @@ def main(fname):
             except IOError:
                 # attempts multiple graphics paths
                 pass
+
+    for csvpath in csvlist:
+      os.makedirs(os.path.join(dirname, os.path.dirname(csvpath)), exist_ok=True)
+      shutil.copy2(csvpath, os.path.join(dirname, csvpath))
 
     # copy bbl file
     print('[parxiv] copying bbl file')
