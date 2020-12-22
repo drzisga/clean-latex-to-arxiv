@@ -258,6 +258,7 @@ def flatten(source):
         with io.open(inputname, encoding='utf-8') as f:
             newtext = f.read()
         newtext = strip_comments(newtext)
+        newtext = newtext.rstrip()
         newtext = re.sub(r'(\\input{)(.*?)(})', repl, newtext)
         return newtext
 
@@ -339,7 +340,7 @@ def main(fname):
     # copy bbl file
     print('[parxiv] copying bbl file')
     bblfile = fname.replace('.tex', '.bbl')
-    newbblfile = fname.replace('.tex', '_strip.bbl')
+    newbblfile = fname.replace('.tex', '.bbl')
     bblflag = False
     try:
         shutil.copy2(bblfile, os.path.join(dirname, newbblfile))
@@ -362,7 +363,7 @@ def main(fname):
                     shutil.copy2(f, os.path.join(dirname, localname))
         print('\n')
 
-    newtexfile = fname.replace('.tex', '_strip.tex')
+    newtexfile = fname.replace('.tex', '.tex')
     print('[parxiv] writing %s' % newtexfile)
     with io.open(
             os.path.join(dirname, newtexfile), 'w') as fout:
